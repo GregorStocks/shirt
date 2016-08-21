@@ -1,7 +1,6 @@
 (ns shirt.core
   (:gen-class))
 
-
 (defn scary-people
   "Go `n` levels deep into the 'Normal people scare me' shirt"
   [n]
@@ -16,6 +15,24 @@
                \" \'
                \' \")))))
 
+(def bit->word {0 "foo"
+                1 "bar"})
+
+(defn number->word [i]
+  (str (bit->word (rem i 2))
+       (let [q (quot i 2)]
+         (when (pos? q)
+           (number->word q)))))
+
+(defn scary-heredoc [n]
+  (apply str
+         (concat
+          (for [i (range n 1 -1)]
+            (str "Normal people wearing <<" (number->word i) "\n"))
+          ["Normal people scare me\n"]
+          (for [i (range 1 n)]
+            (str (number->word (inc i)) "\nshirts scare me\n")))))
+
 (defn -main [& args]
-  (doseq [n (range (read-string (or (first args) "10")))]
-    (println (scary-people n))))
+  (let [n (read-string (or (first args) "10"))]
+    (println (scary-heredoc n))))
