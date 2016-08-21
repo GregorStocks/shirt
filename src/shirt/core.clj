@@ -38,8 +38,7 @@
           (for [i (range 1 n)]
             (str "\n" (number->word (inc i)) "\nshirts scare me")))))
 (def cli-options
-  [[nil "--image-name IMAGENAME" "Output filename, including extension" :default "shirt.png"]
-   ["-o" "--output-format FORMAT" "Output format (text or image)" :default "text" :validate-fn (partial contains? output-formats)]
+  [["-o" "--output-format FORMAT" "Output format (text or image)" :default "image" :validate-fn (partial contains? output-formats)]
    ["-n" "--n N" "n for which to render scary(n)" :default 10 :parse-fn #(Long/parseLong %)]
    ["-s" "--string-style STYLE" "String style (heredoc or quotes)" :default "heredoc" :validate-fn (partial contains? string-styles)]
    ["-h" "--help"]])
