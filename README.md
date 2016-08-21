@@ -1,3 +1,4 @@
+n degrees of scary normal people wearing shirts. Originally by @j-po, graciously packaged, tested, and generally made a real codebase by master software engineer @gregorstocks .
 
 ## Usage
 
