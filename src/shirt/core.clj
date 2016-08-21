@@ -7,15 +7,12 @@
   "Go `n` levels deep into the 'Normal people scare me' shirt"
   [n]
   (apply str (loop [i n
-              ret "Normal people scare me"
-              quotes (if (odd? i) "\"" "'")]
-         (if (zero? i)
-           ret
-           (recur (dec i)
-                  (concat ["Normal people wearing "] quotes ret quotes [" shirts scare me"])
-                  (case quotes
-                    "\"" "'"
-                    "'" "\""))))))
+                    ret ["Normal people scare me"]]
+               (let [quotes (if (odd? i) "\"" "'")]
+                 (if (zero? i)
+                   ret
+                   (recur (dec i)
+                          (doall (concat ["Normal people wearing " quotes] ret [quotes " shirts scare me"]))))))))
 
 (def bit->word {0 "foo"
                 1 "bar"})

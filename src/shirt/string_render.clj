@@ -44,10 +44,8 @@
 
 (def num-candidates 10000)
 (defn best-partitions [s ^Graphics g width y height]
-  (println "Evaluating" num-candidates "random partitions, this may take a while...")
   (let [candidates (for [i (range num-candidates)] (candidate-partition s y height i))
         result (first (sort-by (partial candidate-badness g width) candidates))]
-    (println "Evaluated!")
     (first (sort-by (partial candidate-badness g width) candidates))))
 
 (defn render-string-inside-rectangle [s
@@ -60,6 +58,5 @@
         partitions (best-partitions s g (- right-x left-x) top-y (- bottom-y top-y))]
     (.setColor g Color/BLACK)
     (doseq [{:keys [string font y height] :as p} partitions]
-      (println "rendering" p)
       (.setFont g font)
       (.drawString g string left-x (+ (long y) height)))))
