@@ -1,7 +1,7 @@
 (ns shirt.renderer)
 
 (defn render-shirt-to-image [config s]
-  (spit "haha jk" (:image-name config)))
+  (spit (:image-name config) "haha jk"))
 
 (defn render [config s]
   (case (:output-format config)

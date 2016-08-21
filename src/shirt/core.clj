@@ -27,6 +27,7 @@
            (number->word q)))))
 
 (def string-styles #{"heredoc" "quotes"})
+(def output-formats #{"text" "image"})
 
 (defn scary-heredoc [n]
   (apply str
@@ -38,9 +39,9 @@
             (str "\n" (number->word (inc i)) "\nshirts scare me")))))
 (def cli-options
   [[nil "--image-name IMAGENAME" "Output filename, including extension" :default "shirt.png"]
-   ["-o" "--output-format FORMAT" "Output format (text or image)" :default "text" :validate-fn #{"text" "image"}]
+   ["-o" "--output-format FORMAT" "Output format (text or image)" :default "text" :validate-fn (partial contains? output-formats)]
    ["-n" "--n N" "n for which to render scary(n)" :default 10 :parse-fn #(Long/parseLong %)]
-   ["-s" "--string-style STYLE" "String style (heredoc or quotes)" :default "heredoc" :validate-fn #(contains? string-styles %)]
+   ["-s" "--string-style STYLE" "String style (heredoc or quotes)" :default "heredoc" :validate-fn (partial contains? string-styles)]
    ["-h" "--help"]])
 
 (defn -main
