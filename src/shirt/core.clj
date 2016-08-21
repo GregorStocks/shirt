@@ -6,16 +6,19 @@
 (defn scary-people
   "Go `n` levels deep into the 'Normal people scare me' shirt"
   [n]
-  (loop [i n
-         ret "Normal people scare me"
-         quotes (if (odd? i) \" \')]
-    (if (zero? i)
-      ret
-      (recur (dec i)
-             (str "Normal people wearing " quotes ret quotes " shirts scare me")
-             (case quotes
-               \" \'
-               \' \")))))
+  (apply str (loop [i n
+              ret "Normal people scare me"
+              quotes (if (odd? i) "\"" "'")]
+         (if (zero? i)
+           ret
+           (recur (dec i)
+                  (concat ["Normal people wearing "] quotes ret quotes [" shirts scare me"])
+                  (case quotes
+                    "\"" "'"
+                    "'" "\""))))))
+
+(doseq [n (range 10)]
+  (println (scary-people n)))
 
 (def bit->word {0 "foo"
                 1 "bar"})
