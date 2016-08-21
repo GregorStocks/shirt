@@ -1,5 +1,7 @@
 (ns shirt.core
-  (:gen-class))
+  (:gen-class)
+  (:use [clojure.tools.cli :as cli]
+        [shirt.renderer :as renderer]))
 
 (defn scary-people
   "Go `n` levels deep into the 'Normal people scare me' shirt"
@@ -24,6 +26,8 @@
          (when (pos? q)
            (number->word q)))))
 
+(def string-styles #{"heredoc" "quotes"})
+
 (defn scary-heredoc [n]
   (apply str
          (concat
@@ -32,11 +36,23 @@
           ["Normal people scare me"]
           (for [i (range 1 n)]
             (str "\n" (number->word (inc i)) "\nshirts scare me")))))
+(def cli-options
+  [[nil "--image-name IMAGENAME" "Output filename, including extension" :default "shirt.png"]
+   ["-o" "--output-format FORMAT" "Output format (text or image)" :default "text" :validate-fn #{"text" "image"}]
+   ["-n" "--n N" "n for which to render scary(n)" :default 10 :parse-fn #(Long/parseLong %)]
+   ["-s" "--string-style STYLE" "String style (heredoc or quotes)" :default "heredoc" :validate-fn #(contains? string-styles %)]
+   ["-h" "--help"]])
 
-(defn -main [& args]
-  (let [n (read-string (or (first args) "10"))
-        f (case (or (second args) "heredoc")
-             "heredoc" scary-heredoc
-             "quotes" scary-people
-             (fn [n] "Unknown command: " (second args)))]
-    (println (f n))))
+(defn -main
+  [& args]
+  (let [{:keys [errors options summary]} (cli/parse-opts args cli-options)
+        n (:n options)]
+    (cond
+      (seq errors) (doseq [e errors]
+                     (println e))
+      (:help options) (println summary)
+      :else (renderer/render
+             options
+             (case (:string-style options)
+               "heredoc" (scary-heredoc n)
+               "quotes" (scary-people n))))))
