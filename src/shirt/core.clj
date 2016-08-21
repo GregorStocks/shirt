@@ -29,10 +29,13 @@
          (concat
           (for [i (range n 1 -1)]
             (str "Normal people wearing <<" (number->word i) "\n"))
-          ["Normal people scare me\n"]
+          ["Normal people scare me"]
           (for [i (range 1 n)]
-            (str (number->word (inc i)) "\nshirts scare me\n")))))
+            (str "\n" (number->word (inc i)) "\nshirts scare me")))))
 
 (defn -main [& args]
-  (let [n (read-string (or (first args) "10"))]
-    (println (scary-heredoc n))))
+  (let [n (read-string (or (first args) "10"))
+        f (case (or (second args) "heredoc")
+             "heredoc" scary-heredoc
+             "quotes" scary-people)]
+    (println (f n))))
