@@ -1,10 +1,3 @@
-# shirt
-
-FIXME: description
-
-## Installation
-
-Download from http://example.com/FIXME.
 
 ## Usage
 
@@ -36,22 +29,6 @@ shirts scare me
 $ lein run 4 quotes
 Normal people wearing "Normal people wearing 'Normal people wearing "Normal people wearing 'Normal people scare me' shirts scare me" shirts scare me' shirts scare me" shirts scare me
 ```
-
-## Options
-
-FIXME: listing of options this app accepts.
-
-## Examples
-
-...
-
-### Bugs
-
-...
-
-### Any Other Sections
-### That You Think
-### Might be Useful
 
 ## License
 
