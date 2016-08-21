@@ -1,5 +1,6 @@
 (ns shirt.string-render
-  (:import [java.awt Graphics Font Color]))
+  (:import [java.awt Graphics Font Color]
+           java.awt.font.FontRenderContext))
 
 (defn normalize [xs x]
   (/ x (reduce + xs)))
@@ -7,19 +8,14 @@
 (def fancy-hash (memoize hash))
 
 (defn candidate-partition [s top-y total-height i]
-  (let [num-partitions (if (< (count s) 40)
-                         1
-                         3)
+  (let [num-partitions (inc (mod i (inc (/ (count s) 20))))
         partition-offsets (range (count s))
-        used-offsets (sort (take num-partitions (sort-by #(fancy-hash [i %]) partition-offsets)))
+        used-offsets (sort (cons 0 (take (dec num-partitions) (sort-by #(fancy-hash [i %]) partition-offsets))))
         partitions (map (fn [start end] {:string (apply str (take (- end start) (drop start s)))
-                                         :importance (rand)
-                                         :start start
-                                         :end end})
-                        (cons 0 (apply vector used-offsets))
-                        (conj (drop 1 used-offsets) (count s)))]
-    (println "uh" num-partitions (count s))
-
+                                         :importance (+ 1 (rand))})
+                        used-offsets
+                        (conj (apply vector (drop 1 used-offsets))
+                              (count s)))]
     (second
      (reduce
       (fn [[y acc] p]
@@ -28,33 +24,42 @@
                                    (:importance p)))]
           [(+ y height)
            (conj acc (merge p
-                            {:height height
-                             :y y}))]))
+                            {:height (long height)
+                             :font (Font. "Impact" Font/BOLD (long height))
+                             :y (long y)}))]))
       [top-y []]
       partitions))))
 
-(defn candidate-goodness [^Font f width c]
-  (reduce + 0
-          (for [{:keys [string height]} c]
-            0)))
+(defn candidate-badness [^Graphics g width c]
+  (/ (reduce +
+          (for [{:keys [string height font]} c]
+            (let [fm (.getFontMetrics g font)
+                  text-width (.stringWidth fm string)]
+              (if (> text-width width)
+                ;; overflow is very bad
+                (* 100 (- text-width width))
+                ;; underflow is slightly bad
+                (- width text-width)))))
+     (count c)))
 
-(defn best-partitions [s width y height ^Font f]
-  (let [candidates (for [i (range 2)] (candidate-partition s y height i))]
-    (doseq [candidate candidates]
-      (println candidate (candidate-goodness f width candidate)))
-    (first (sort-by (partial candidate-goodness f width) candidates))))
+(def num-candidates 10000)
+(defn best-partitions [s ^Graphics g width y height]
+  (println "Evaluating" num-candidates "random partitions, this may take a while...")
+  (let [candidates (for [i (range num-candidates)] (candidate-partition s y height i))
+        result (first (sort-by (partial candidate-badness g width) candidates))]
+    (println "Evaluated!")
+    (first (sort-by (partial candidate-badness g width) candidates))))
 
 (defn render-string-inside-rectangle [s
                                       ^Graphics graphics
-                                      ^Font f
                                       left-x
                                       right-x
                                       top-y
                                       bottom-y]
   (let [g graphics
-        partitions (best-partitions s (- right-x left-x) top-y (- bottom-y top-y) f)]
+        partitions (best-partitions s g (- right-x left-x) top-y (- bottom-y top-y))]
     (.setColor g Color/BLACK)
-    (doseq [{:keys [line size y]} partitions]
-      (.setFont g (.deriveFont f size))
-      (println "drawin" line size y left-x)
-      (.drawString g line left-x y))))
+    (doseq [{:keys [string font y height] :as p} partitions]
+      (println "rendering" p)
+      (.setFont g font)
+      (.drawString g string left-x (+ (long y) height)))))

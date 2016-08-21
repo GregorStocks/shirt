@@ -19,7 +19,6 @@
               (sr/render-string-inside-rectangle
                line
                g
-               (Font. "Impact" Font/BOLD (- bottom-y top-y))
                left-x
                right-x
                (+ top-y (* i line-height))
