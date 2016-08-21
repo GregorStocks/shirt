@@ -37,5 +37,6 @@
   (let [n (read-string (or (first args) "10"))
         f (case (or (second args) "heredoc")
              "heredoc" scary-heredoc
-             "quotes" scary-people)]
+             "quotes" scary-people
+             (fn [n] "Unknown command: " (second args)))]
     (println (f n))))

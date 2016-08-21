@@ -8,9 +8,34 @@ Download from http://example.com/FIXME.
 
 ## Usage
 
-FIXME: explanation
+```
+$ lein run 4
+Normal people wearing <<foofoobar
+Normal people wearing <<barbar
+Normal people wearing <<foobar
+Normal people scare me
+foobar
+shirts scare me
+barbar
+shirts scare me
+foofoobar
+shirts scare me
 
-    $ java -jar shirt-0.1.0-standalone.jar [args]
+$ lein run 4 heredoc
+Normal people wearing <<foofoobar
+Normal people wearing <<barbar
+Normal people wearing <<foobar
+Normal people scare me
+foobar
+shirts scare me
+barbar
+shirts scare me
+foofoobar
+shirts scare me
+
+$ lein run 4 quotes
+Normal people wearing "Normal people wearing 'Normal people wearing "Normal people wearing 'Normal people scare me' shirts scare me" shirts scare me' shirts scare me" shirts scare me
+```
 
 ## Options
 
