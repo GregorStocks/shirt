@@ -54,6 +54,7 @@
       (:help options) (println summary)
       :else (renderer/render
              options
-             (case (:string-style options)
-               "heredoc" (scary-heredoc n)
-               "quotes" (scary-people n))))))
+             (str (case (:string-style options)
+                    "heredoc" (scary-heredoc n)
+                    "quotes" (scary-people n))
+                  ".")))))

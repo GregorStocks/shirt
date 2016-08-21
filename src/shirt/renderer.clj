@@ -31,4 +31,4 @@
   (case (:output-format config)
     "text" (println s)
     "show" (i/show (render-shirt-to-image s) :title "nice")
-    "png" (i/write (render-shirt-to-image s) (:output-format config) "png")))
+    "png" (i/write (render-shirt-to-image s) (:output-filename config) "png")))
