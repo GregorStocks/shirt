@@ -4,12 +4,6 @@
             [clojure.string :as string]
             [shirt.string-render :as sr]))
 
-(defn split-long-lines [lines max-line-length]
-  (println "max length" max-line-length)
-  (let [result (map #(apply str %)
-                    (mapcat (partial partition-all max-line-length) lines))]
-    result))
-
 (defn render-shirt-to-image [s]
   (let [image (i/load-image-resource "shirt.jpg")
         g (i/graphics image)
@@ -20,14 +14,17 @@
         lines (string/split s #"\n")
         line-height (long (/ (- bottom-y top-y) (count lines)))]
     (.setColor g Color/BLACK)
-    (doall (map (fn [line i]
-                  (sr/render-string-inside-rectangle line g
-                                                  (Font. "Impact" Font/BOLD (- bottom-y top-y))
-                                                  left-x
-                                                  right-x
-                                                  (+ top-y (* i line-height))
-                                                  (+ top-y (* (inc i) line-height))))
-                lines (range)))
+    (doall (map
+            (fn [line i]
+              (sr/render-string-inside-rectangle
+               line
+               g
+               (Font. "Impact" Font/BOLD (- bottom-y top-y))
+               left-x
+               right-x
+               (+ top-y (* i line-height))
+               (+ top-y (* (inc i) line-height))))
+            lines (range)))
     image))
 
 (defn render [config s]
