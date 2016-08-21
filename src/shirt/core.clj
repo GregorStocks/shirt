@@ -17,9 +17,6 @@
                     "\"" "'"
                     "'" "\""))))))
 
-(doseq [n (range 10)]
-  (println (scary-people n)))
-
 (def bit->word {0 "foo"
                 1 "bar"})
 

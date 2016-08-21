@@ -7,7 +7,6 @@
 (defn split-long-lines [lines]
   (let [result (map #(apply str %)
                     (mapcat (partial partition-all max-line-length) lines))]
-    (println "splut" lines result)
     result))
 
 (defn render-shirt-to-image [s]
