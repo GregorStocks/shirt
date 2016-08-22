@@ -8,7 +8,7 @@
 (def fancy-hash (memoize hash))
 
 (defn candidate-partition [s top-y total-height i]
-  (let [num-partitions (inc (mod i (inc (/ (count s) 20))))
+  (let [num-partitions (inc (mod i (+ 3 (/ (count s) 40))))
         partition-offsets (range (count s))
         used-offsets (sort (cons 0 (take (dec num-partitions) (sort-by #(fancy-hash [i %]) partition-offsets))))
         partitions (map (fn [start end] {:string (apply str (take (- end start) (drop start s)))
@@ -37,12 +37,12 @@
                   text-width (.stringWidth fm string)]
               (if (> text-width width)
                 ;; overflow is very bad
-                (* 100 (- text-width width))
+                (* 4 (- text-width width))
                 ;; underflow is slightly bad
                 (- width text-width)))))
      (count c)))
 
-(def num-candidates 10000)
+(def num-candidates 5000)
 (defn best-partitions [s ^Graphics g width y height]
   (let [candidates (for [i (range num-candidates)] (candidate-partition s y height i))
         result (first (sort-by (partial candidate-badness g width) candidates))]
