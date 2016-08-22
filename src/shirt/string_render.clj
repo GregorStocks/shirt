@@ -7,7 +7,7 @@
 
 (def fancy-hash (memoize hash))
 
-(defn candidate-partition [s top-y total-height i]
+(defn candidate-partition [s top-y total-height max-width i g]
   (let [num-partitions (inc (mod i (+ 3 (/ (count s) 40))))
         partition-offsets (range (count s))
         used-offsets (sort (cons 0 (take (dec num-partitions) (sort-by #(fancy-hash [i %]) partition-offsets))))
@@ -16,47 +16,58 @@
                         used-offsets
                         (conj (apply vector (drop 1 used-offsets))
                               (count s)))]
-    (second
-     (reduce
-      (fn [[y acc] p]
-        (let [height (* total-height
-                        (normalize (map :importance partitions)
-                                   (:importance p)))]
-          [(+ y height)
-           (conj acc (merge p
-                            {:height (long height)
-                             :font (Font. "Impact" Font/BOLD (long height))
-                             :y (long y)}))]))
-      [top-y []]
-      partitions))))
+    (first (reduce
+            (fn [[acc y available-height] p]
+              (let [base-height (+ available-height (* total-height
+                                                       (normalize (map :importance partitions)
+                                                                  (:importance p))))
+                    [height width font] (loop [height base-height]
+                                          (let [font (Font. "Impact" Font/BOLD (long height))
+                                                fm (.getFontMetrics g font)
+                                                width (.stringWidth fm (:string p))]
+                                            (if (< max-width width)
+                                              (recur (* height 0.9))
+                                              [height width font])))]
+                [ (conj acc (merge p
+                                   {:height (long height)
+                                    :width (long width)
+                                    :font font
+                                    :top-y (long y)
+                                    :bottom-y (+ (long y) (long height))}))
+                  (+ y height)
+                  (- base-height height)]))
+            [[] top-y 0]
+            partitions))))
 
-(defn candidate-badness [^Graphics g width c]
-  (/ (reduce +
-          (for [{:keys [string height font]} c]
-            (let [fm (.getFontMetrics g font)
-                  text-width (.stringWidth fm string)]
-              (if (> text-width width)
-                ;; overflow is very bad
-                (* 4 (- text-width width))
-                ;; underflow is slightly bad
-                (- width text-width)))))
-     (count c)))
+(def min-height 15)
+(defn candidate-badness [^Graphics g max-width max-height c]
+  (+
+   ;; the taller the better!!
+   (reduce + (map (comp - #(Math/sqrt %) :height) c))
+   ;; distance from the width of the shirt is bad
+   (reduce max (map #(Math/abs (- max-width (:width %))) c))
+   (count c)
+   (let [total-height (reduce + (map :height c))]
+     (Math/abs (- total-height max-height)))))
 
-(def num-candidates 5000)
+(def num-candidates 2500)
 (defn best-partitions [s ^Graphics g width y height]
-  (let [candidates (for [i (range num-candidates)] (candidate-partition s y height i))
-        result (first (sort-by (partial candidate-badness g width) candidates))]
-    (first (sort-by (partial candidate-badness g width) candidates))))
+  (let [candidates (for [i (range num-candidates)] (candidate-partition s y height width i g))]
+    (first (sort-by (partial candidate-badness g width height) candidates))))
 
-(defn render-string-inside-rectangle [s
-                                      ^Graphics graphics
-                                      left-x
-                                      right-x
-                                      top-y
-                                      bottom-y]
+(defn render-string-inside-rectangle
+  "Tries to render a tall version of the string roughly within the rectangle (it might overflow on the right).
+  Returns {:bottom-y y} where y is the y-coordinate of the lowest pixel it touches."
+  [s
+   ^Graphics graphics
+   left-x
+   right-x
+   top-y
+   bottom-y]
   (let [g graphics
         partitions (best-partitions s g (- right-x left-x) top-y (- bottom-y top-y))]
     (.setColor g Color/BLACK)
-    (doseq [{:keys [string font y height] :as p} partitions]
+    (doseq [{:keys [string font height bottom-y] :as p} partitions]
       (.setFont g font)
-      (.drawString g string left-x (+ (long y) height)))))
+      (.drawString g string left-x bottom-y))
+    {:bottom-y (last (sort (map :bottom-y partitions)))}))
