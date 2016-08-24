@@ -1,30 +1,35 @@
 (ns shirt.renderer
   (:import [java.awt Color Font])
   (:require [mikera.image.core :as i]
-            [clojure.string :as string]))
-
-(def max-line-length 20)
-(defn split-long-lines [lines]
-  (let [result (map #(apply str %)
-                    (mapcat (partial partition-all max-line-length) lines))]
-    result))
+            [clojure.string :as string]
+            [shirt.string-render :as sr]))
 
 (defn render-shirt-to-image [s]
   (let [image (i/load-image-resource "shirt.jpg")
         g (i/graphics image)
-        top-y 150
+        top-y 80
         bottom-y 450
-        lines (split-long-lines (string/split s #"\n"))
+        left-x 140
+        right-x 350
+        lines (string/split s #"\n")
         line-height (long (/ (- bottom-y top-y) (count lines)))]
     (.setColor g Color/BLACK)
-    (.setFont g (Font. "Impact" Font/BOLD line-height))
-    (doall (map (fn [line offset]
-                  (.drawString g line 100
-                               (+ top-y (* offset line-height))))
-                lines (range)))
-    (i/show image :title "nice")))
+    (doall (reduce
+            (fn [[i y] line]
+              (let [{:keys [bottom-y]} (sr/render-string-inside-rectangle
+                                        line
+                                        g
+                                        left-x
+                                        right-x
+                                        y
+                                        (+ top-y (* (inc i) line-height)))]
+                [(inc i) bottom-y]))
+            [0 top-y]
+            lines))
+    image))
 
 (defn render [config s]
   (case (:output-format config)
     "text" (println s)
-    "image" (render-shirt-to-image s)))
+    "show" (i/show (render-shirt-to-image s) :title "nice")
+    "png" (i/write (render-shirt-to-image s) (:output-filename config) "png")))

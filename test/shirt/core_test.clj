@@ -1,10 +1,11 @@
 (ns shirt.core-test
   (:require [clojure.test :refer :all]
             [shirt.core :refer :all]
-            [shirt.renderer :as r]))
+            [shirt.renderer :as r]
+            [shirt.string-render :as sr]))
 
-(deftest splut
-  (testing "splut"
-    (is (= (r/split-long-lines []) []))
-    (is (= (r/split-long-lines ["aaa" "bbb"]) ["aaa" "bbb"]))
-    (is (= (r/split-long-lines ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"]) ["aaaaaaaaaaaaaaaaaaaa" "aaaaaaaaaaaaaaaaaaaa" "aa"]))))
+(deftest normalize
+  (is (= (sr/normalize [1 2 3] 3) 1/2))
+  (is (= (sr/normalize [1 1] 1) 1/2))
+  (is (= (sr/normalize [0 1] 1) 1))
+  (is (= (sr/normalize [0 1] 0) 0)))
