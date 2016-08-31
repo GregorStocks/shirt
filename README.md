@@ -1,4 +1,4 @@
-n degrees of scary normal people wearing shirts. Original by @j-po, graciously packaged, tested, extended, and generally made a real codebase by master software engineer @gregorstocks .
+n degrees of scary normal people wearing shirts. Original by @j-po, graciously packaged, tested, extended, and generally made a real codebase by Master Software Engineer @gregorstocks .
 
 ## Usage
 
