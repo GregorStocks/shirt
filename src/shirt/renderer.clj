@@ -2,7 +2,8 @@
   (:import [java.awt Color Font])
   (:require [mikera.image.core :as i]
             [clojure.string :as string]
-            [shirt.string-render :as sr]))
+            [shirt.string-render :as sr]
+	    [taoensso.tufte :refer [defnp p profiled profile]]))
 
 (defn render-shirt-to-image [s]
   (let [image (i/load-image-resource "shirt.jpg")
@@ -14,7 +15,7 @@
         lines (string/split s #"\n")
         line-height (long (/ (- bottom-y top-y) (count lines)))]
     (.setColor g Color/BLACK)
-    (doall (reduce
+    (doall (p :render-text (reduce
             (fn [[i y] line]
               (let [{:keys [bottom-y]} (sr/render-string-inside-rectangle
                                         line
@@ -25,11 +26,11 @@
                                         (+ top-y (* (inc i) line-height)))]
                 [(inc i) bottom-y]))
             [0 top-y]
-            lines))
+            lines)))
     image))
 
 (defn render [config s]
-  (case (:output-format config)
-    "text" (println s)
-    "show" (i/show (render-shirt-to-image s) :title "nice")
-    "png" (i/write (render-shirt-to-image s) (:output-filename config) "png")))
+ (p :render (case (:output-format config)
+	     "text" (println s)
+	     "show" (i/show (render-shirt-to-image s) :title "nice")
+	     "png" (i/write (render-shirt-to-image s) (:output-filename config) "png"))))

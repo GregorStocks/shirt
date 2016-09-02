@@ -39,17 +39,19 @@
    [nil "--output-filename FILENAME" "Output filename, if relevant" :default "out.png"]
    ["-n" "--n N" "n for which to render scary(n)" :default 10 :parse-fn #(Long/parseLong %)]
    ["-s" "--string-style STYLE" "String style (heredoc or quotes)" :default "heredoc" :validate-fn (partial contains? string-styles)]
-   ["-h" "--help"]])
+   ["-h" "--help"]
+   ["-p" "--profile" "print profiling info"]])
 
 (defn -main
   [& args]
-  (let [{:keys [errors options summary]} (cli/parse-opts args cli-options)
-        n (:n options)]
+  (let [{:keys [errors summary] {:keys p n s} options} (cli/parse-opts args cli-options)
+        render (cond->> renderer/render
+                 p (comp profiled))]
     (cond
       (seq errors) (doseq [e errors]
                      (println e))
       (:help options) (println summary)
-      :else (renderer/render
+      :else (render
              options
              (case (:string-style options)
                "heredoc" (scary-heredoc n)
