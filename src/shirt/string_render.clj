@@ -44,20 +44,20 @@
 
 (def min-height 15)
 (defn candidate-badness [^Graphics g max-width max-height c]
-  (+
+  (p :general-badness (+
    ;; the taller the better!!
-   (reduce + (map (comp - #(Math/sqrt %) :height) c))
+   (p :height-badness (reduce + (map (comp - #(Math/sqrt %) :height) c)))
    ;; distance from the width of the shirt is bad
-   (reduce max (map #(Math/abs (- max-width (:width %))) c))
+   (p :width-coverage-badness (reduce max (map #(Math/abs (- max-width (:width %))) c)))
    (count c)
-   (let [total-height (reduce + (map :height c))]
-     (Math/abs (- total-height max-height)))))
+   (let [total-height (p :total-height (reduce + (map :height c)))]
+     (Math/abs (- total-height max-height))))))
 
 (def num-candidates 2500)
 (defn best-partitions [s ^Graphics g width y height]
   (p :best-partitions
      (let [candidates (for [i (range num-candidates)] (candidate-partition s y height width i g))]
-       (first (sort-by (partial candidate-badness g width height) candidates)))))
+       (first (p :sort-candidates (sort-by (partial candidate-badness g width height) candidates))))))
 
 (defn render-string-inside-rectangle
   "Tries to render a tall version of the string roughly within the rectangle (it might overflow on the right).
