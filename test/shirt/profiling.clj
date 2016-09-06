@@ -20,8 +20,8 @@
 
 (add-basic-println-handler! {})
 
-(doseq
-  [{:keys [s n] :as opts} options]
-  (profile {} (render opts (case s
-                             "heredoc" (scary-heredoc n)
-                             (scary-people n)))))
+(profile {}
+         (doseq [{:keys [s n] :as opts} options]
+           (render opts (case s
+                          "heredoc" (scary-heredoc n)
+                          (scary-people n)))))
