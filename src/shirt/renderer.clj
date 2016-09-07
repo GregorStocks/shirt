@@ -3,7 +3,7 @@
   (:require [mikera.image.core :as i]
             [clojure.string :as string]
             [shirt.string-render :as sr]
-	    [taoensso.tufte :refer [defnp p profiled profile]]))
+            [taoensso.tufte :refer [defnp p profiled profile]]))
 
 (defn render-shirt-to-image [s]
   (let [image (p :load-image (i/load-image-resource "shirt.jpg"))
