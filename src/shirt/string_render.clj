@@ -52,8 +52,10 @@
 
 (def num-candidates 2500)
 (defn best-partitions [s ^Graphics g width y height]
-  (let [candidates (for [i (range num-candidates)] (candidate-partition s y height width i g))]
-    (first (sort-by (partial candidate-badness g width height) candidates))))
+  (let [candidates (for [i (range num-candidates)
+                         :let [candidate (candidate-partition s y height width i g)]]
+                     [candidate (candidate-badness g width height candidate)])]
+    (ffirst (sort-by last candidates))))
 
 (defn render-string-inside-rectangle
   "Tries to render a tall version of the string roughly within the rectangle (it might overflow on the right).
