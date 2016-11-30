@@ -1,5 +1,8 @@
 (ns shirt.string-render
-  (:require [taoensso.tufte :refer [defnp p profiled profile]])
+  (:require 
+    [clojure.string :refer [split]]
+    [shirt.dict-intersect :refer [word-substrings]]
+    [taoensso.tufte :refer [defnp p profiled profile]])
   (:import [java.awt Graphics Font Color]
            java.awt.font.FontRenderContext))
 
@@ -9,62 +12,59 @@
 (def fancy-hash (memoize hash))
 
 (defn candidate-partition [s top-y total-height max-width i g]
-  (p :candidate-partition
-     (let [num-partitions (inc (mod i (+ 3 (/ (count s) 40))))
-           partition-offsets (range (count s))
-           used-offsets (sort (cons 0 (take (dec num-partitions)
-                                            (sort-by #(fancy-hash [i %]) partition-offsets))))
-           partitions (map (fn [start end] {:string (apply str (take (- end start) (drop start s)))
-                                            :importance (+ 1 (rand))})
-                           used-offsets
-                           (conj (apply vector (drop 1 used-offsets))
-                                 (count s)))]
-       (first (reduce
-                (fn [[acc y available-height] p]
-                  (let [base-height (+ available-height (* total-height
-                                                           (normalize (map :importance partitions)
-                                                                      (:importance p))))
-                        [height width font] (loop [height base-height]
-                                              (let [font (Font. "Impact" Font/BOLD (long height))
-                                                    fm (.getFontMetrics g font)
-                                                    width (.stringWidth fm (:string p))]
-                                                (if (< max-width width)
-                                                  (recur (* height 0.9))
-                                                  [height width font])))]
-                    [ (conj acc (merge p
-                                       {:height (long height)
-                                        :width (long width)
-                                        :font font
-                                        :top-y (long y)
-                                        :bottom-y (+ (long y) (long height))}))
-                     (+ y height)
-                     (- base-height height)]))
-                [[] top-y 0]
-                partitions)))))
+  (let [num-partitions (inc (mod i (+ 3 (/ (count s) 40))))
+        partition-offsets (range (count s))
+        used-offsets (sort (cons 0 (take (dec num-partitions) (sort-by #(fancy-hash [i %]) partition-offsets))))
+        partitions (map (fn [start end] {:string (apply str (take (- end start) (drop start s)))
+                                         :importance (+ 1 (rand))})
+                        used-offsets
+                        (conj (apply vector (drop 1 used-offsets))
+                              (count s)))]
+    (first (reduce
+            (fn [[acc y available-height] p]
+              (let [base-height (+ available-height (* total-height
+                                                       (normalize (map :importance partitions)
+                                                                  (:importance p))))
+                    [height width font] (loop [height base-height]
+                                          (let [font (Font. "Impact" Font/BOLD (long height))
+                                                fm (.getFontMetrics g font)
+                                                width (.stringWidth fm (:string p))]
+                                            (if (< max-width width)
+                                              (recur (* height 0.9))
+                                              [height width font])))]
+                [(conj acc (merge p
+                                   {:height (long height)
+                                    :width (long width)
+                                    :font font
+                                    :top-y (long y)
+                                    :bottom-y (+ (long y) (long height))}))
+                  (+ y height)
+                  (- base-height height)]))
+            [[] top-y 0]
+            partitions))))
 
 (def min-height 15)
-(defn candidate-badness [^Graphics g max-width max-height c]
-  (p :general-badness (+
+(defn candidate-badness [^Graphics g max-width max-height words c]
+  (+
    ;; the taller the better!!
-   (p :height-badness (reduce + (map (comp - #(Math/sqrt %) :height) c)))
+   (reduce + (map (comp - #(Math/sqrt %) :height) c))
    ;; distance from the width of the shirt is bad
-   (p :width-coverage-badness (reduce max (map #(Math/abs (- max-width (:width %))) c)))
+   (reduce max (map #(Math/abs (- max-width (:width %))) c))
    (count c)
-   (let [total-height (p :total-height (reduce + (map :height c)))]
-     (Math/abs (- total-height max-height))))))
+   (let [total-height (reduce + (map :height c))]
+     (Math/abs (- total-height max-height)))
+   ;; the more real words, the better
+   (reduce - 0 (map count
+                    (filter words
+                            (map #(split (:string %) #" *") c))))))
 
 (def num-candidates 2500)
-
 (defn best-partitions [s ^Graphics g width y height]
-  (let [keyfunc-calls (atom 0)
-        result (p :best-partitions
-                  (let [candidates (for [i (range num-candidates)
-                                         :let [candidate (candidate-partition s y height width i g)]]
-                                     [candidate (do (swap! keyfunc-calls inc)
-                                                    (candidate-badness g width height candidate))])]
-                    (ffirst (sort-by last candidates))))]
-    (println "keyfunc calls: " @keyfunc-calls)
-    result))
+  (let [real-words (word-substrings s)
+        candidates (for [i (range num-candidates)
+                         :let [candidate (candidate-partition s y height width i g)]]
+                     [candidate (candidate-badness g width height real-words candidate)])]
+    (ffirst (sort-by last candidates))))
 
 (defn render-string-inside-rectangle
   "Tries to render a tall version of the string roughly within the rectangle (it might overflow on the right).
