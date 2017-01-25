@@ -1,12 +1,23 @@
 (ns shirt.string-render
   (:require [taoensso.tufte :refer [defnp p profiled profile]])
-  (:import [java.awt Graphics Font Color]
+  (:import [java.awt Graphics Font Color GraphicsEnvironment]
            java.awt.font.FontRenderContext))
 
 (defn normalize [xs x]
   (/ x (reduce + xs)))
 
 (def fancy-hash (memoize hash))
+
+(def all-fonts (.getAvailableFontFamilyNames (GraphicsEnvironment/getLocalGraphicsEnvironment)))
+(def font-types [Font/BOLD
+                 Font/ITALIC
+                 (+ Font/BOLD Font/ITALIC)
+                 Font/PLAIN
+                 Font/PLAIN
+                 Font/PLAIN])
+
+(defn random-font [height]
+  (Font. (rand-nth all-fonts) (rand-nth font-types) (long height)))
 
 (defn candidate-partition [s top-y total-height max-width i g]
   (p :candidate-partition
@@ -25,7 +36,7 @@
                                                            (normalize (map :importance partitions)
                                                                       (:importance p))))
                         [height width font] (loop [height base-height]
-                                              (let [font (Font. "Impact" Font/BOLD (long height))
+                                              (let [font (Font. (random-font) Font/BOLD (long height))
                                                     fm (.getFontMetrics g font)
                                                     width (.stringWidth fm (:string p))]
                                                 (if (< max-width width)
