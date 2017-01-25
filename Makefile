@@ -9,8 +9,6 @@ clean:
 SHIRT=time java -Djava.awt.headless=true -jar target/uberjar/*standalone.jar
 
 examples: uberjar
-	$(SHIRT) -n 1000 -o text > examples/onek-heredoc.txt
-	$(SHIRT) -n 1000 -o text -s quotes > examples/onek-quotes.txt
 	$(SHIRT) -n 2 -s quotes -o png --output-filename examples/quotes-two.png
 	$(SHIRT) -n 4 -s quotes -o png --output-filename examples/quotes-four.png
 	$(SHIRT) -n 6 -s quotes -o png --output-filename examples/quotes-six.png
