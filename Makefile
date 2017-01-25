@@ -4,6 +4,7 @@ uberjar: src/*/*.clj
 	lein uberjar
 
 clean:
+	lein clean
 	rm -rf examples/*.png examples/*.txt target
 
 SHIRT=java -Djava.awt.headless=true -jar target/uberjar/*standalone.jar
