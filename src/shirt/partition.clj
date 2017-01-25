@@ -3,7 +3,7 @@
 
 (defn randomly-partition-string [s]
   (let [partition-offsets (filter #(= (nth s %) \ ) (range (count s)))
-        num-partitions (rand-int (count partition-offsets))
+        num-partitions (rand-int (long (/ (count partition-offsets) 2)))
         used-offsets (sort (cons 0 (take (dec num-partitions)
                                          (shuffle partition-offsets))))
         partitions (map (fn [start end] (string/trim
