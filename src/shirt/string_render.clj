@@ -1,7 +1,7 @@
 (ns shirt.string-render
   (:require [taoensso.tufte :refer [defnp p profiled profile]]
             [shirt.partition :as partition])
-  (:import [java.awt Graphics Font Color GraphicsEnvironment]
+  (:import [java.awt Graphics Font Color GraphicsEnvironment RenderingHints]
            java.awt.font.FontRenderContext))
 
 (defn normalize [xs x]
