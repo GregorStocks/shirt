@@ -6,7 +6,7 @@ uberjar: src/*/*.clj
 clean:
 	rm -rf examples/*.png examples/*.txt target
 
-SHIRT=time java -Djava.awt.headless=true -jar target/uberjar/*standalone.jar
+SHIRT=java -Djava.awt.headless=true -jar target/uberjar/*standalone.jar
 
 examples: uberjar
 	$(SHIRT) -n 2 -s quotes -o png --output-filename examples/quotes-two.png

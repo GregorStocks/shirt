@@ -63,14 +63,11 @@
 (def num-candidates 2500)
 
 (defn best-partitions [s ^Graphics g width y height]
-  (let [keyfunc-calls (atom 0)
-        result (p :best-partitions
+  (let [result (p :best-partitions
                   (let [candidates (for [i (range num-candidates)
                                          :let [candidate (candidate-partition s y height width i g)]]
-                                     [candidate (do (swap! keyfunc-calls inc)
-                                                    (candidate-badness g width height candidate))])]
+                                     [candidate (candidate-badness g width height candidate)])]
                     (ffirst (sort-by last candidates))))]
-    (println "keyfunc calls: " @keyfunc-calls)
     result))
 
 (defn render-string-inside-rectangle
