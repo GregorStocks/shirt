@@ -1,6 +1,6 @@
 (ns shirt.string-render
   (:require [taoensso.tufte :refer [defnp p profiled profile]])
-  (:import [java.awt Graphics Font Color GraphicsEnvironment]
+  (:import [java.awt Graphics Font Color GraphicsEnvironment RenderingHints]
            java.awt.font.FontRenderContext))
 
 (defn normalize [xs x]
@@ -89,8 +89,10 @@
    bottom-y]
   (let [g graphics
         partitions (best-partitions s g (- right-x left-x) top-y (- bottom-y top-y))]
+    (.setRenderingHint g RenderingHints/KEY_TEXT_ANTIALIASING RenderingHints/VALUE_TEXT_ANTIALIAS_GASP)
     (.setColor g Color/BLACK)
     (doseq [{:keys [string font height bottom-y] :as p} partitions]
       (.setFont g font)
       (.drawString g string left-x bottom-y))
     {:bottom-y (last (sort (map :bottom-y partitions)))}))
+
