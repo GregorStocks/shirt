@@ -1,11 +1,16 @@
+all: clean examples
+
 uberjar: src/*/*.clj
 	lein uberjar
+
+clean:
+	rm -rf examples/*.png examples/*.txt target
 
 SHIRT=time java -Djava.awt.headless=true -jar target/uberjar/*standalone.jar
 
 examples: uberjar
-	$(SHIRT) -n 5000 -o text > examples/fivek-heredoc.txt
-	$(SHIRT) -n 5000 -o text -s quotes > examples/fivek-quotes.txt
+	$(SHIRT) -n 1000 -o text > examples/onek-heredoc.txt
+	$(SHIRT) -n 1000 -o text -s quotes > examples/onek-quotes.txt
 	$(SHIRT) -n 2 -s quotes -o png --output-filename examples/quotes-two.png
 	$(SHIRT) -n 4 -s quotes -o png --output-filename examples/quotes-four.png
 	$(SHIRT) -n 6 -s quotes -o png --output-filename examples/quotes-six.png
