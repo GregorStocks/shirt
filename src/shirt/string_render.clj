@@ -1,6 +1,7 @@
 (ns shirt.string-render
-  (:require [taoensso.tufte :refer [defnp p profiled profile]])
-  (:import [java.awt Graphics Font Color GraphicsEnvironment RenderingHints]
+  (:require [taoensso.tufte :refer [defnp p profiled profile]]
+            [shirt.partition :as partition])
+  (:import [java.awt Graphics Font Color GraphicsEnvironment]
            java.awt.font.FontRenderContext))
 
 (defn normalize [xs x]
@@ -21,15 +22,9 @@
 
 (defn candidate-partition [s top-y total-height max-width i g]
   (p :candidate-partition
-     (let [num-partitions (inc (mod i (+ 3 (/ (count s) 40))))
-           partition-offsets (range (count s))
-           used-offsets (sort (cons 0 (take (dec num-partitions)
-                                            (sort-by #(fancy-hash [i %]) partition-offsets))))
-           partitions (map (fn [start end] {:string (apply str (take (- end start) (drop start s)))
-                                            :importance (+ 1 (rand))})
-                           used-offsets
-                           (conj (apply vector (drop 1 used-offsets))
-                                 (count s)))]
+     (let [partitions (map (fn [s] {:string s
+                                    :importance (+ 1 (rand))})
+                           (partition/randomly-partition-string s))]
        (first (reduce
                (fn [[acc y available-height] p]
                  (let [base-height (+ available-height (* total-height
