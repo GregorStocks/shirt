@@ -31,38 +31,39 @@
                            (conj (apply vector (drop 1 used-offsets))
                                  (count s)))]
        (first (reduce
-                (fn [[acc y available-height] p]
-                  (let [base-height (+ available-height (* total-height
-                                                           (normalize (map :importance partitions)
-                                                                      (:importance p))))
-                        [height width font] (loop [height base-height]
-                                              (let [font (Font. (random-font) Font/BOLD (long height))
-                                                    fm (.getFontMetrics g font)
-                                                    width (.stringWidth fm (:string p))]
-                                                (if (< max-width width)
-                                                  (recur (* height 0.9))
-                                                  [height width font])))]
-                    [ (conj acc (merge p
-                                       {:height (long height)
-                                        :width (long width)
-                                        :font font
-                                        :top-y (long y)
-                                        :bottom-y (+ (long y) (long height))}))
-                     (+ y height)
-                     (- base-height height)]))
-                [[] top-y 0]
-                partitions)))))
+               (fn [[acc y available-height] p]
+                 (let [base-height (+ available-height (* total-height
+                                                          (normalize (map :importance partitions)
+                                                                     (:importance p))))
+                       [height width font] (loop [height base-height]
+                                             (let [font (random-font height)
+                                                   fm (.getFontMetrics g font)
+                                                   width (.stringWidth fm (:string p))]
+                                               (if (< max-width width)
+                                                 (recur (* height 0.9))
+                                                 [height width font])))]
+                   [(conj acc (merge p
+                                     {:height (long height)
+                                      :width (long width)
+                                      :font font
+                                      :top-y (long y)
+                                      :bottom-y (+ (long y) (long height))}))
+                    (+ y height)
+                    (- base-height height)]))
+               [[] top-y 0]
+               partitions)))))
 
 (def min-height 15)
 (defn candidate-badness [^Graphics g max-width max-height c]
-  (p :general-badness (+
-   ;; the taller the better!!
-   (p :height-badness (reduce + (map (comp - #(Math/sqrt %) :height) c)))
-   ;; distance from the width of the shirt is bad
-   (p :width-coverage-badness (reduce max (map #(Math/abs (- max-width (:width %))) c)))
-   (count c)
-   (let [total-height (p :total-height (reduce + (map :height c)))]
-     (Math/abs (- total-height max-height))))))
+  (p :general-badness
+     (+
+      ;; the taller the better!!
+      (p :height-badness (reduce + (map (comp - #(Math/sqrt %) :height) c)))
+      ;; distance from the width of the shirt is bad
+      (p :width-coverage-badness (reduce max (map #(Math/abs (- max-width (:width %))) c)))
+      (count c)
+      (let [total-height (p :total-height (reduce + (map :height c)))]
+        (Math/abs (- total-height max-height))))))
 
 (def num-candidates 2500)
 
