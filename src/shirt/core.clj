@@ -25,6 +25,7 @@
 
 (def string-styles #{"heredoc" "quotes"})
 (def output-formats #{"text" "show" "png"})
+(def break-types #{"spaces" "anything"})
 
 (defn scary-heredoc [n]
   (apply str
@@ -38,7 +39,8 @@
   [["-o" "--output-format FORMAT" "Output format (text, show or png)" :default "image" :validate-fn (partial contains? output-formats)]
    [nil "--output-filename FILENAME" "Output filename, if relevant" :default "out.png"]
    ["-n" "--n N" "n for which to render scary(n)" :default 10 :parse-fn #(Long/parseLong %)]
-   ["-s" "--string-style STYLE" "String style (heredoc or quotes)" :default "heredoc" :validate-fn (partial contains? string-styles)]
+   ["-s" "--string-style STYLE" "String style (heredoc or quotes)" :default "quotes" :validate-fn (partial contains? string-styles)]
+   ["-b" "--break-on TYPE" "What to break lines on (spaces or anything)" :default "spaces" :validate-fn (partial contains? break-types)]
    ["-h" "--help"]])
 
 (defn -main

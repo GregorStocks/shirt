@@ -5,7 +5,7 @@
             [shirt.string-render :as sr]
             [taoensso.tufte :refer [defnp p profiled profile]]))
 
-(defn render-shirt-to-image [s]
+(defn render-shirt-to-image [config s]
   (let [image (p :load-image (i/load-image-resource "shirt.jpg"))
         g (i/graphics image)
         top-y 80
@@ -19,6 +19,7 @@
        (doall (reduce
                 (fn [[i y] line]
                   (let [{:keys [bottom-y]} (sr/render-string-inside-rectangle
+                                            config
                                              line
                                              g
                                              left-x
@@ -31,7 +32,7 @@
     image))
 
 (defn render [config s]
-  (p :render (case (:output-format config)
-               "text" (println s)
-               "show" (i/show (render-shirt-to-image s) :title "nice")
-               "png" (i/write (render-shirt-to-image s) (:output-filename config) "png"))))
+  (case (:output-format config)
+    "text" (println s)
+    "show" (i/show (render-shirt-to-image config s) :title "nice")
+    "png" (i/write (render-shirt-to-image config s) (:output-filename config) "png")))
