@@ -1,5 +1,6 @@
 (ns shirt.string-render
-  (:require [taoensso.tufte :refer [defnp p profiled profile]])
+  (:require [taoensso.tufte :refer [defnp p profiled profile]]
+            [shirt.partition :as partition])
   (:import [java.awt Graphics Font Color GraphicsEnvironment RenderingHints]
            java.awt.font.FontRenderContext))
 
@@ -19,17 +20,11 @@
 (defn random-font [height]
   (Font. (rand-nth all-fonts) (rand-nth font-types) (long height)))
 
-(defn candidate-partition [s top-y total-height max-width i g]
+(defn candidate-partition [config s top-y total-height max-width i g]
   (p :candidate-partition
-     (let [num-partitions (inc (mod i (+ 3 (/ (count s) 40))))
-           partition-offsets (range (count s))
-           used-offsets (sort (cons 0 (take (dec num-partitions)
-                                            (sort-by #(fancy-hash [i %]) partition-offsets))))
-           partitions (map (fn [start end] {:string (apply str (take (- end start) (drop start s)))
-                                            :importance (+ 1 (rand))})
-                           used-offsets
-                           (conj (apply vector (drop 1 used-offsets))
-                                 (count s)))]
+     (let [partitions (map (fn [s] {:string s
+                                    :importance (+ 1 (rand))})
+                           (partition/randomly-partition-string config s))]
        (first (reduce
                (fn [[acc y available-height] p]
                  (let [base-height (+ available-height (* total-height
@@ -67,28 +62,26 @@
 
 (def num-candidates 2500)
 
-(defn best-partitions [s ^Graphics g width y height]
-  (let [keyfunc-calls (atom 0)
-        result (p :best-partitions
+(defn best-partitions [config s ^Graphics g width y height]
+  (let [result (p :best-partitions
                   (let [candidates (for [i (range num-candidates)
-                                         :let [candidate (candidate-partition s y height width i g)]]
-                                     [candidate (do (swap! keyfunc-calls inc)
-                                                    (candidate-badness g width height candidate))])]
+                                         :let [candidate (candidate-partition config s y height width i g)]]
+                                     [candidate (candidate-badness g width height candidate)])]
                     (ffirst (sort-by last candidates))))]
-    (println "keyfunc calls: " @keyfunc-calls)
     result))
 
 (defn render-string-inside-rectangle
   "Tries to render a tall version of the string roughly within the rectangle (it might overflow on the right).
   Returns {:bottom-y y} where y is the y-coordinate of the lowest pixel it touches."
-  [s
+  [config
+   s
    ^Graphics graphics
    left-x
    right-x
    top-y
    bottom-y]
   (let [g graphics
-        partitions (best-partitions s g (- right-x left-x) top-y (- bottom-y top-y))]
+        partitions (best-partitions config s g (- right-x left-x) top-y (- bottom-y top-y))]
     (.setRenderingHint g RenderingHints/KEY_TEXT_ANTIALIASING RenderingHints/VALUE_TEXT_ANTIALIAS_GASP)
     (.setColor g Color/BLACK)
     (doseq [{:keys [string font height bottom-y] :as p} partitions]
