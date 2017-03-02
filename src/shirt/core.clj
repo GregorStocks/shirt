@@ -23,7 +23,7 @@
          (when (pos? q)
            (number->word q)))))
 
-(def string-styles #{"heredoc" "quotes"})
+(def string-styles #{"heredoc" "quotes" "simpsons"})
 (def output-formats #{"text" "show" "png"})
 (def break-types #{"spaces" "anything"})
 
@@ -54,5 +54,6 @@
       :else (renderer/render
              options
              (case (:string-style options)
+               "simpsons" "WHAT IF THEY MADE SIMPSONS PORN ILLEGAL"
                "heredoc" (scary-heredoc n)
                "quotes" (scary-people n))))))
