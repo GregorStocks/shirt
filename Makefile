@@ -1,4 +1,4 @@
-all: clean examples
+all: clean examples simpsons
 
 uberjar: src/*/*.clj
 	lein uberjar
@@ -20,4 +20,7 @@ examples: uberjar
 	$(SHIRT) -n 6 -b anything -o png --output-filename examples/anything-six.png
 	$(SHIRT) -n 8 -b anything -o png --output-filename examples/anything-eight.png
 	$(SHIRT) -n 10 -b anything -o png --output-filename examples/anything-ten.png
-	
+
+simpsons: uberjar
+	$(SHIRT) -s simpsons -o png --output-filename examples/simpsons.png
+
